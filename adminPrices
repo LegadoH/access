@@ -1,0 +1,452 @@
+Option Compare Database
+
+
+
+
+Private Sub cbocategoria_AfterUpdate()
+
+Me.cboSubCat.RowSource = "Select ARTICULO, id From SUBCATEGORIAS Where idCategoria = " & Me.cbocategoria.Column(1) & " " _
+ & " OR id = 161 ; "
+
+
+
+Dim db As Database
+Dim rs As Recordset
+Dim strSQL As String
+
+
+strSQL = "SELECT *, ([IdProducto] &"" | ""& [NOMBREPRODUCTO]&"" | ""& [MARCA]&"" | ""& [MODELO]&"" | ""& [Descripcion]) " _
+           & " AS campComb FROM detalleProductos Where categoria in (Select id From SUBCATEGORIAS " _
+           & " Where idCategoria = " & Me.cbocategoria.Column(1) & " Order by id; )"
+ 'strSQL = "SELECT * FROM detalleProductos Where categoria = " & Me.cbocategoria.Column(1) & " ; "
+
+Set db = CurrentDb
+
+Set rs = db.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)
+
+Set Me.Recordset = rs
+
+
+
+End Sub
+
+Private Sub cbocategoria_Enter()
+
+End Sub
+
+Private Sub cbocategoria_Exit(Cancel As Integer)
+If IsNull(Me.cbocategoria.Column(0)) Then
+MsgBox "Por favor seleccione una categoría"
+Me.cbocategoria.SetFocus
+End
+End If
+End Sub
+
+Private Sub cboMarca_AfterUpdate()
+Dim cboToStrMarca As String
+Dim db As Database
+Dim rs As Recordset
+Dim strSQL As String
+
+strSQL = " SELECT *, ([IdProducto] &"" | ""& [MODELO]&"" | ""& [Descripcion]) AS campComb" _
+& " FROM DetalleProductos Where DetalleProductos.categoria = " & Me.cboSubCat.Column(1) & " AND " _
+& " DetalleProductos.MARCA = '" & cboMarca.Column(0) & "' ; "
+Set db = CurrentDb
+Set rs = db.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)
+Set Me.Recordset = rs
+
+
+
+End Sub
+
+Private Sub cboSubCat_AfterUpdate()
+
+cboMarca.RowSource = "Select Distinct MARCA From detalleProductos Where categoria = " & Me.cboSubCat.Column(1) & " " _
+& " OR IdProducto = 49 Order by MARCA; "
+
+
+Dim db As Database
+Dim rs As Recordset
+Dim strSQL As String
+
+
+strSQL = " SELECT *, ([IdProducto]&"" | ""& [MARCA] &"" | ""& [MODELO]&"" | ""& [Descripcion]) AS campComb" _
+& " FROM DetalleProductos Where DetalleProductos.categoria = " & Me.cboSubCat.Column(1) & " order by IdProducto ; "
+Set db = CurrentDb
+
+Set rs = db.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)
+
+Set Me.Recordset = rs
+
+
+
+
+End Sub
+
+Private Sub cboSubCat_Click()
+If IsNull(Me.cbocategoria.Column(0)) Then
+MsgBox "Por favor seleccione una categoría"
+Me.cbocategoria.SetFocus
+Else
+End If
+
+
+End Sub
+
+Private Sub Comando28_Click()
+
+End Sub
+
+
+
+
+Private Sub Comando76_Click()
+
+fechaRestaurac
+End Sub
+
+Private Sub Comando77_Click()
+End Sub
+
+Private Sub Form_Load()
+
+txtPrCredHyln
+
+Dim db As Database
+Dim rs As Recordset
+Dim strSQL As String
+
+
+strSQL = "SELECT *,  ([NOMBREPRODUCTO]&"" | ""& [MARCA]&"" | ""& [MODELO]&"" | ""& [Descripcion]) " _
+           & " AS campComb FROM detalleProductos ORDER BY IdProducto DESC "
+          
+           
+ 
+Set db = CurrentDb
+
+Set rs = db.OpenRecordset(strSQL, dbOpenDynaset, dbSeeChanges)
+
+Set Me.Recordset = rs
+
+
+
+
+
+
+
+Me.cbocategoria.RowSource = "Select nombreCategoria, id From CATEGORIAS Where id In (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) order by id"
+Me.cboSubCat.RowSource = "Select ARTICULO, id From SUBCATEGORIAS Order by id; "
+Me.cboMarca.RowSource = "Select Distinct MARCA From detalleProductos ORDER BY MARCA; "
+Me.cbocategoria = Me.cbocategoria.ItemData(14)
+Me.cboSubCat = Me.cboSubCat.ItemData(160)
+Me.cboMarca = Me.cboMarca.ItemData(335)
+End Sub
+
+Private Sub Opción31_AfterUpdate()
+
+End Sub
+
+Private Sub opcElegirReg_AfterUpdate()
+DoCmd.RunCommand acCmdSaveRecord
+If Me.opcElegirReg = True Then
+MsgBox "seleccionado"
+
+Dim db As Database
+Dim rst As DAO.Recordset
+
+
+strSQLdP = "Select IdProducto From detalleProductos"
+
+Set rst = Me.RecordsetClone
+MsgBox Me.CurrentRecord
+MsgBox rst.RecordCount
+
+rst.MoveFirst
+rst.MoveLast
+
+varGlobGoToRec = Me.CurrentRecord
+
+MsgBox varGlobGoToRec
+
+Else: MsgBox "No selecc"
+End If
+End Sub
+
+Private Sub txtIdProds_Click()
+Dim MyStringA As String
+
+MyNewStringA = Me.txtIdProds.Value
+Debug.Print MyNewStringA
+
+
+DoCmd.OpenForm "frmSubFormCambioDePrecios", WhereCondition:="[idProd]=" & MyNewStringA
+
+End Sub
+
+Private Sub txtPorc_AfterUpdate()
+If IsNull(Me.txtPorc.Value) = False Then
+Me.cantAModif.Enabled = False
+Else
+ Me.cantAModif.Enabled = True
+End If
+
+End Sub
+
+
+Private Sub cantAModif_AfterUpdate()
+If IsNull(Me.cantAModif.Value) = False Then
+ Me.txtPorc.Enabled = False
+Else
+ Me.txtPorc.Enabled = True
+End If
+
+End Sub
+
+
+
+Private Sub verifCambPrecTodos_AfterUpdate()
+Dim StrSQLDbTrue As String
+Dim SreSQLDbFalse
+Dim dbs As Database
+Set dbs = CurrentDb
+If Me.verifCambPrecTodos Then
+
+        
+        StrSQLDbTrue = " UPDATE DetalleProductos SET DetalleProductos.selectPCambPrecio = True "
+        StrSQLDbTrue = StrSQLDbTrue & IIf((Me.cbocategoria.Column(0) = "TODAS"), "", "Where categoria in (Select id From SUBCATEGORIAS " _
+                 & " Where idCategoria = " & Me.cbocategoria.Column(1) & " )")
+        StrSQLDbTrue = StrSQLDbTrue & IIf((Me.cboSubCat.Column(0) = "TODAS"), "", " AND categoria = " & Me.cboSubCat.Column(1) & " ")
+        StrSQLDbTrue = StrSQLDbTrue & IIf((Me.cboMarca.Column(0) = "TODAS"), "", " AND MARCA = '" & Me.cboMarca.Column(0) & "' ")
+        MsgBox StrSQLDbTrue
+        dbs.Execute StrSQLDbTrue
+        dbs.Close
+        Me.cbocategoria.Enabled = False
+        Me.cboMarca.Enabled = False
+        Me.cboSubCat.Enabled = False
+    Else
+         SreSQLDbFalse = " UPDATE DetalleProductos SET DetalleProductos.selectPCambPrecio = False "
+        
+        MsgBox SreSQLDbFalse
+        dbs.Execute SreSQLDbFalse
+        dbs.Close
+        Me.cbocategoria.Enabled = True
+        Me.cboMarca.Enabled = True
+        Me.cboSubCat.Enabled = True
+    End If
+
+
+        
+Me.Requery
+
+End Sub
+
+
+Private Sub btnSvCambPrec_Click()
+
+'===========================================
+Dim strAcumidProd As String
+Dim strAcumPrecios As String
+Dim strInsertPr As String
+Dim strGetPrices() As String
+Dim rst As DAO.Recordset
+Dim strSQL As String
+'===========================================
+
+
+strSQL = "SELECT  IdProducto, NOMBREPRODUCTO, MARCA, MODELO, PrecioCredito, " _
+        & " PrecioContado, PrecioMayoreo, PrecioOnline FROM detalleproductos WHERE selectPCambPrecio = True"
+Set rst = CurrentDb.OpenRecordset(strSQL)
+
+If rst.RecordCount > 0 Then
+    Do
+    strAcumidProd = rst.Fields(0)
+    strAcumPrecios = rst.Fields(4) & ", " & rst.Fields(5) & ", " & rst.Fields(6) & ", " & rst.Fields(7)
+    strGetPrices = Split(strAcumPrecios, ", ")
+
+    '===========================================
+    Select Case Me.cboTipoPrecio
+        Case "Crédito"
+        strInsertPr = strGetPrices(0) & ", 0, 0, 0"
+        Debug.Print fncGtIndexs(strGetPrices(0), 0, strAcumidProd)
+        Case "Contado"
+        strInsertPr = "0, " & strGetPrices(1) & ", 0, 0"
+        Debug.Print fncGtIndexs(strGetPrices(1), 1, strAcumidProd)
+        Case "Mayoreo"
+        strInsertPr = "0, 0, " & strGetPrices(2) & ", 0"
+        Debug.Print fncGtIndexs(strGetPrices(2), 2, strAcumidProd)
+        Case "Online"
+        strInsertPr = "0, 0, 0, " & strGetPrices(3)
+        Debug.Print fncGtIndexs(strGetPrices(3), 3, strAcumidProd)
+        Case "Todo"
+         Dim counter As Integer
+         strInsertPr = strAcumPrecios
+         counter = 0
+         Do While counter < 4
+         Debug.Print fncGtIndexs(strGetPrices(counter), counter, strAcumidProd)
+         counter = counter + 1
+         Loop
+
+
+    End Select
+    '===========================================
+    CurrentDb.Execute "INSERT INTO tblCompendCambPrecio (idProd, precios, tipoCambioPr, operacionIncrDecr, fechaRestabl, cantidad)" _
+                    & " VALUES (" & strAcumidProd & " , '" & strInsertPr & "',  '" & Me.cboTipoPrecio & "' , " _
+                    & " '" & Me.cboIncrDecr & "', '" & Me.txtFchRestabl & "', '" & Me.txtPorc & "')"
+    rst.MoveNext
+    Loop Until rst.EOF
+Set rst = Nothing
+Else
+End If
+     Me.Requery
+     MsgBox varGlobGoToRec
+DoCmd.GoToRecord acDataForm, "frmCambioDePrecio", acGoTo, varGlobGoToRec
+
+
+
+
+End Sub
+
+
+Function txtPrCredHyln()
+
+
+
+Dim objFrc As FormatCondition
+Dim objFrcDos As FormatCondition
+Dim objFrcTres As FormatCondition
+Dim objFrcCuatro As FormatCondition
+Dim objFrcCinco As FormatCondition
+Dim objFrcsEIS As FormatCondition
+Dim objFrcSiete As FormatCondition
+Me.txtPrcCred.FormatConditions.Delete
+
+
+Set objFrc = Me.txtPrcCred.FormatConditions.Add(acExpression, , "[cuentaCambsPrCred] > 0")
+Me.txtPrcCred.FormatConditions(0).BackColor = RGB(127, 179, 213)
+
+Set objFrcDos = Me.txtPrcCont.FormatConditions.Add(acExpression, , "[cuentaCambsPrCont] > 0")
+Me.txtPrcCont.FormatConditions(0).BackColor = RGB(127, 179, 213)
+
+Set objFrcTres = Me.txtPrcMay.FormatConditions.Add(acExpression, , "[cuentaCambsPrMay] > 0")
+Me.txtPrcMay.FormatConditions(0).BackColor = RGB(127, 179, 213)
+
+Set objFrcCuatro = Me.txtExistencia.FormatConditions.Add(acExpression, , "[txtExistencia] = 0")
+Me.txtExistencia.FormatConditions(1).BackColor = RGB(255, 247, 4)
+Me.txtExistencia.FormatConditions(1).FontBold = True
+
+Set objFrcCinco = Me.txtPrcOnline.FormatConditions.Add(acExpression, , "[cuentaCambsPrOnl] > 0")
+Me.txtPrcOnline.FormatConditions(0).BackColor = RGB(127, 179, 213)
+
+Set objFrcsEIS = Me.txtMessTransc.FormatConditions.Add(acFieldValue, acBetween, 0, 6)
+Me.txtMessTransc.FormatConditions(0).BackColor = RGB(163, 228, 215)
+
+Set objFrcsEIS = Me.txtMessTransc.FormatConditions.Add(acFieldValue, acBetween, 7, 12)
+Me.txtMessTransc.FormatConditions(1).BackColor = RGB(174, 214, 241)
+
+Set objFrcSiete = Me.txtMessTransc.FormatConditions.Add(acFieldValue, acBetween, 13, 24)
+Me.txtMessTransc.FormatConditions(2).BackColor = RGB(231, 76, 60)
+
+Set objFrcSiete = Me.txtMessTransc.FormatConditions.Add(acFieldValue, acGreaterThanOrEqual, 25)
+Me.txtMessTransc.FormatConditions(3).BackColor = RGB(148, 49, 38)
+Me.txtMessTransc.FormatConditions(3).ForeColor = RGB(253, 254, 254)
+
+End Function
+
+Private Sub Comando55_Click()
+
+End Sub
+
+Public Function psrlCond(resultado As Long) As Long
+ 
+Dim PorcCant As Integer
+If IsNull(Me.txtPorc.Value) = True And IsNull(Me.cantAModif.Value) = False Then
+    MsgBox "Porcentaje es nulo tomar en cuenta Cantidad"
+    psrlCond = Me.cantAModif.Value
+ElseIf IsNull(Me.txtPorc.Value) = False And IsNull(Me.cantAModif.Value) = True Then
+    MsgBox "Cantidad es nulo tomar en cuenta Porcentaje"
+    psrlCond = Me.txtPorc.Value / 100 * resultado
+    Debug.Print psrlCond
+ElseIf IsNull(Me.txtPorc.Value) = True And IsNull(Me.cantAModif.Value) = True Then
+MsgBox "Cantidad y porcentaje son nulos, usar alguna opción"
+End
+End If
+End Function
+
+Function psrlOption(fnPOVarVal As Long, gtPrcfrSql As Long) As Long
+''=========================================== Sentencia condicional para Incremento o decremento
+If IsNull(Me.cboIncrDecr) = True Then
+    MsgBox "Por favor elegir incremento o decremento"
+    End
+ElseIf Me.cboIncrDecr.Column(0) = "Incremento" Then
+    psrlOption = gtPrcfrSql + fnPOVarVal
+    Debug.Print psrlOption & " resultado Final"
+ElseIf Me.cboIncrDecr.Column(0) = "Decremento" Then
+    psrlOption = fnPOVarVal - gtPrcfrSql
+    Debug.Print psrlOption & " resultado Final"
+End If
+'MsgBox "No se ejecuta"
+
+End Function
+
+Function fncGtIndexs(ByRef valToGtIndx As String, ByRef numIndex As Integer, idProdFIndex As String) As String
+
+Dim valuesSql() As String
+Dim valuesToModif(4) As String
+Dim item As Variant
+Dim Count As Variant
+Dim valsToCnvrt As Integer
+Dim container(4) As String
+Dim camposNmbr(4) As String
+Dim strFinalToUpd(4) As String
+camposNmbr(0) = "PrecioCredito = "
+camposNmbr(1) = "PrecioContado = "
+camposNmbr(2) = "PrecioMayoreo = "
+camposNmbr(3) = "PrecioOnline = "
+Count = 0
+   valuesSql = Split(valToGtIndx, ", ")
+   For Each item In valuesSql
+       
+               container(numIndex) = psrlOption(CInt(item), psrlCond(CInt(item)))
+               strFinalToUpd(numIndex) = IIf(IsNull(container(numIndex)), "", camposNmbr(numIndex) & container(numIndex) & ", ")
+      Count = Count + 1
+   Next item
+   
+   strCompleto = strFinalToUpd(0) & strFinalToUpd(1) & strFinalToUpd(2) & strFinalToUpd(3)
+   MsgBox strCompleto
+   strSinComaFinal = Left(strCompleto, Len(strCompleto) - 2)
+   MsgBox strSinComaFinal
+   
+Dim dbs As Database
+Dim qdf As QueryDef
+        Set dbs = CurrentDb
+        dbs.Execute "UPDATE detalleProductos " _
+            & "SET " & strSinComaFinal & " " _
+            & "WHERE selectPCambPrecio = True AND IdProducto = " & idProdFIndex & ";"
+        dbs.Close
+   
+End Function
+
+
+
+Public Function SendEmail()
+
+Dim varName As Variant
+Dim varCC As Variant
+Dim varSubject As Variant
+Dim varBody As Variant
+
+varName = "james@yahoo.com"
+varCC = "billy@gmail.com, joe@yahoo.com"
+'separate each email by a ','
+
+varSubject = "Cambios de precio en los siguientes artículos:"
+'Email subject
+
+varBody = "Let's get ice cream this week"
+
+'Body of the email
+DoCmd.SendObject , , , varName, varCC, , varSubject, varBody, True, False
+'Send email command. The True after "varBody" allows user to edit email before sending.
+'The False at the end will not send it as a Template File
+
+End Function
